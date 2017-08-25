@@ -3,12 +3,12 @@ package com.example.bckj.texts;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
@@ -35,7 +35,6 @@ public class Main2Activity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
-        if (Build.VERSION.SDK_INT >= 23) {
             if (ActivityCompat.checkSelfPermission(Main2Activity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
                     || ActivityCompat.checkSelfPermission(Main2Activity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                     || ActivityCompat.checkSelfPermission(Main2Activity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
@@ -45,13 +44,6 @@ public class Main2Activity extends AppCompatActivity {
                         Manifest.permission.ACCESS_COARSE_LOCATION,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE,
                         Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE);
-                mWebView = (WebView) findViewById(R.id.mWebView);
-                startAssistLocation();
-                initWebSettings(mWebView);
-                mWebView.setWebViewClient(new CommonWebClient());
-                mWebView.setWebChromeClient(new CommonWebChromeWebClient());
-                mWebView.loadUrl("http://118.190.91.24:8080/freewifi/app/test.html");
-                Toast.makeText(Main2Activity.this, "正在获取权限", Toast.LENGTH_SHORT).show();
             }else {
                 Toast.makeText(Main2Activity.this, "已开通权限", Toast.LENGTH_SHORT).show();
                 mWebView = (WebView) findViewById(R.id.mWebView);
@@ -59,15 +51,8 @@ public class Main2Activity extends AppCompatActivity {
                 initWebSettings(mWebView);
                 mWebView.setWebViewClient(new CommonWebClient());
                 mWebView.setWebChromeClient(new CommonWebChromeWebClient());
-                mWebView.loadUrl("http://118.190.91.24:8080/freewifi/app/test.html");
+                mWebView.loadUrl("http://118.190.91.24:8080/freewifi/app/index.html?id=ch");
             }
-        }
-      /*  mWebView = (WebView) findViewById(R.id.mWebView);
-        startAssistLocation();
-        initWebSettings(mWebView);
-        mWebView.setWebViewClient(new CommonWebClient());
-        mWebView.setWebChromeClient(new CommonWebChromeWebClient());
-        mWebView.loadUrl("http://118.190.91.24:8080/freewifi/app/test.html");*/
     }
     /**
      * 初始化webview设置
@@ -83,21 +68,31 @@ public class Main2Activity extends AppCompatActivity {
         webSettings.setJavaScriptEnabled(true);
         // 设置是否允许定位，这里为了使用H5辅助定位，设置为false。
         //设置为true不一定会进行H5辅助定位，设置为true时只有H5定位失败后才会进行辅助定位
-        webSettings.setGeolocationEnabled(true);
+        webSettings.setGeolocationEnabled(false);
         // 设置UserAgent
         String userAgent = webSettings.getUserAgentString();
         mWebView.getSettings().setUserAgentString(userAgent);
 
         mWebView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
-        mWebView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
-        mWebView.getSettings().setDomStorageEnabled(true);
         mWebView.getSettings().setAppCacheEnabled(true);
         mWebView.getSettings().setAllowContentAccess(true);
-        mWebView.getSettings().setDatabaseEnabled(true);
         mWebView.getSettings().setPluginState(WebSettings.PluginState.ON);
         mWebView.setHorizontalScrollBarEnabled(false);
         mWebView.setHorizontalScrollbarOverlay(true);
-
+        webSettings.setDatabaseEnabled(true);
+        webSettings.setBuiltInZoomControls(false);
+        webSettings.setUseWideViewPort(true);
+        webSettings.setLoadWithOverviewMode(true);
+        webSettings.setGeolocationEnabled(true);
+        webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NORMAL);
+        //设置定位的数据库路径
+        String dir = this.getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
+        webSettings.setGeolocationDatabasePath(dir);
+        // 开启 DOM storage API 功能
+        webSettings.setDomStorageEnabled(true);
+        webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
+        webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        webSettings.setDefaultTextEncodingName("utf-8");
     }
     class CommonWebClient extends WebViewClient {
         @Override
@@ -150,10 +145,9 @@ public class Main2Activity extends AppCompatActivity {
             locationClientSingle.startLocation();
         }
         locationClientSingle.startAssistantLocation();
-        locationClientSingle.startLocation();
         Toast.makeText(Main2Activity.this, "正在定位...", Toast.LENGTH_LONG).show();
     }
-
+    //得到权限回调的方法
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -164,7 +158,7 @@ public class Main2Activity extends AppCompatActivity {
                 initWebSettings(mWebView);
                 mWebView.setWebViewClient(new CommonWebClient());
                 mWebView.setWebChromeClient(new CommonWebChromeWebClient());
-                mWebView.loadUrl("http://118.190.91.24:8080/freewifi/app/test.html");
+                mWebView.loadUrl("http://118.190.91.24:8080/freewifi/app/index.html?id=ch");
                 Toast.makeText(this, "获取！", Toast.LENGTH_SHORT).show();
             } else {
                 // Permission Denied
